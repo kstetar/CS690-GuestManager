@@ -4,6 +4,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
+        // --- Initialization ---
         GuestRepository repository = new GuestRepository();
         repository.LoadFromFile();
         
@@ -11,6 +12,7 @@ internal class Program
 
         bool running = true;
 
+        // --- Main Application Loop ---
         while (running)
         {
             Console.Clear();
@@ -28,6 +30,7 @@ internal class Program
 
             switch (input)
             {
+                // --- Case 1: Add New Guest ---
                 case "1":
                     Console.Clear();
                     Console.WriteLine("========================================");
@@ -56,6 +59,7 @@ internal class Program
                     Console.WriteLine("Press any key to return to menu...");
                     Console.ReadKey();
                     break;
+                // --- Case 2: Guest Directory & Management ---
                 case "2":
                     while (true)
                     {
@@ -81,6 +85,7 @@ internal class Program
                             {
                                 var selectedGuest = guests[choice - 1];
                                 bool inProfile = true;
+                                // --- Guest Profile View ---
                                 while (inProfile)
                                 {
                                     Console.Clear();
@@ -93,15 +98,36 @@ internal class Program
                                     Console.WriteLine($"Plus-One: {(selectedGuest.PlusOne != null ? selectedGuest.PlusOne.Name : "None")}");
                                     Console.WriteLine("\n-- Actions --");
                                     Console.WriteLine("1. Update RSVP");
+                                    Console.WriteLine("2. Remove Guest");
                                     Console.WriteLine("0. Return to Guest Directory");
                                     Console.WriteLine("________________________________________");
-                                    Console.Write("\nSelect an action (0-1): ");
+                                    Console.Write("\nSelect an action (0-2): ");
 
                                     string actionInput = Console.ReadLine() ?? "";
                                     if (actionInput == "0") 
                                     {
                                         inProfile = false;
                                     }
+                                    // --- Action: Remove Guest ---
+                                    else if (actionInput == "2")
+                                    {
+                                        Console.Clear();
+                                        Console.WriteLine("========================================");
+                                        Console.WriteLine($"REMOVE GUEST: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}");
+                                        Console.WriteLine("========================================");
+                                        Console.Write("Are you sure you want to remove this guest? (y/n): ");
+
+                                        string confirm = Console.ReadLine() ?? "";
+                                        if (confirm.ToLower() == "y")
+                                        {
+                                            repository.Remove(selectedGuest);
+                                            Console.WriteLine($"\n[SUCCESS] {selectedGuest.FirstName} {selectedGuest.LastName} removed.");
+                                            Console.WriteLine("Press any key to return to directory...");
+                                            Console.ReadKey();
+                                            inProfile = false;
+                                        }
+                                    }
+                                    // --- Action: Update RSVP ---
                                     else if (actionInput == "1")
                                     {
                                         Console.Clear();
@@ -139,6 +165,7 @@ internal class Program
                         }
                     }
                     break;
+                // --- Case 3: Event Summary Report ---
                 case "3":
                     Console.Clear();
                     var allGuests = repository.GetAll();
