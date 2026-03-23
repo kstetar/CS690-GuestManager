@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace GuestManager;
 
 public interface IGuestRepository

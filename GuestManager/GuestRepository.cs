@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 
 namespace GuestManager; 
@@ -9,9 +6,11 @@ public class GuestRepository : IGuestRepository
 {
     private List<Guest> _guests = new List<Guest>();
     private readonly string _filePath = "guests.json";
+    private int _nextId = 1;
 
     public void Add(Guest guest)
     {
+        guest.Id = _nextId++;
         _guests.Add(guest);
         SaveToFile(); 
     }
@@ -39,8 +38,23 @@ public class GuestRepository : IGuestRepository
     {
         if (File.Exists(_filePath))
         {
-            string json = File.ReadAllText(_filePath);
-            _guests = JsonSerializer.Deserialize<List<Guest>>(json) ?? new List<Guest>();
+            try 
+            {
+                string json = File.ReadAllText(_filePath);
+                _guests = JsonSerializer.Deserialize<List<Guest>>(json) ?? new List<Guest>();
+                
+                // Initialize _nextId to be 1 greater than the highest existing ID
+                if (_guests.Count > 0)
+                {
+                    _nextId = _guests.Max(g => g.Id) + 1;
+                }
+            }
+            catch (Exception)
+            {
+                // If file is corrupted or empty, start fresh
+                _guests = new List<Guest>();
+                _nextId = 1;
+            }
         }
     }
 }
