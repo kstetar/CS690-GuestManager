@@ -1,6 +1,6 @@
 namespace GuestManager;
 
-public class ReportGenerator
+public class ReportGenerator : IReportGenerator
 {
     public int CalculateTotalHeadcount(List<Guest> guests)
     {

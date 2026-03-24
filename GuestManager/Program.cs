@@ -9,10 +9,10 @@ internal class Program
         {
             // --- Initialization ---
             IGuestRepository repository = new GuestRepository(); 
-            GuestService service = new GuestService(repository);
+            IGuestService service = new GuestService(repository);
             service.Initialize();
             
-            ReportGenerator reportGenerator = new ReportGenerator();
+            IReportGenerator reportGenerator = new ReportGenerator();
             
             // --- UI Injection ---
             GuestConsoleUI ui = new GuestConsoleUI(service, reportGenerator);

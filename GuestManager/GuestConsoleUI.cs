@@ -4,10 +4,10 @@ namespace GuestManager.UI;
 
 public class GuestConsoleUI
 {
-    private readonly GuestService _service;
-    private readonly ReportGenerator _reportGenerator;
+    private readonly IGuestService _service;
+    private readonly IReportGenerator _reportGenerator;
 
-    public GuestConsoleUI(GuestService service, ReportGenerator reportGenerator)
+    public GuestConsoleUI(IGuestService service, IReportGenerator reportGenerator)
     {
         _service = service;
         _reportGenerator = reportGenerator;
@@ -18,44 +18,21 @@ public class GuestConsoleUI
         bool running = true;
         while (running)
         {
-            ShowMainMenu();
-            string input = Console.ReadLine() ?? "";
-
-            switch (input)
+            var options = new List<(string, Action)>
             {
-                case "1":
-                    HandleAddGuest();
-                    break;
-                case "2":
-                    HandleManageGuest();
-                    break;
-                case "3":
-                    HandleViewSummary();
-                    break;
-                case "0":
-                    running = false;
-                    break;
-                default:
-                    Console.WriteLine("\nInvalid option, try again.");
-                    Thread.Sleep(1000);
-                    break;
-            }
+                ("Add New Guest", HandleAddGuest),
+                ("Manage Guest", HandleManageGuest),
+                ("View Event Summary", HandleViewSummary),
+                ("Exit", () => running = false)
+            };
+
+            var action = ConsoleMenu.ShowMenu("GUESTMANAGER v1.0", options);
+            action.Invoke();
         }
     }
+    
+    // ShowMainMenu removed, replaced by ConsoleMenu
 
-    private void ShowMainMenu()
-    {
-        Console.Clear();
-        Console.WriteLine("==============================================");
-        Console.WriteLine("GUESTMANAGER v1.0");
-        Console.WriteLine("==============================================");
-        Console.WriteLine("1. Add New Guest");
-        Console.WriteLine("2. Manage Guest");
-        Console.WriteLine("3. View Event Summary");
-        Console.WriteLine("0. Exit");
-        Console.WriteLine("______________________________________________");
-        Console.Write("\nSelect an option: ");
-    }
 
     private void HandleAddGuest()
     {
@@ -82,33 +59,20 @@ public class GuestConsoleUI
     {
         while (true)
         {
-            Console.Clear();
             var guests = _service.GetAllGuests();
-            Console.WriteLine("==============================================");
-            Console.WriteLine("GUEST DIRECTORY");
-            Console.WriteLine("==============================================");
+            var options = new List<(string, int)>();
+
             for (int i = 0; i < guests.Count; i++)
             {
-                string fullName = $"{guests[i].FirstName} {guests[i].LastName}";
-                Console.WriteLine($"{i + 1}. {fullName,-25} ({guests[i].Status})");
+                options.Add(($"{guests[i].FirstName} {guests[i].LastName} ({guests[i].Status})", i));
             }
-            Console.WriteLine("0. Back to Main Menu");
-            Console.WriteLine("______________________________________________");
-            Console.Write("\nSelect a guest to manage: ");
+            options.Add(("Back to Main Menu", -1));
 
-            if (int.TryParse(Console.ReadLine(), out int choice))
-            {
-                if (choice == 0) break;
-                if (choice > 0 && choice <= guests.Count)
-                {
-                    ManageSingleGuest(guests[choice - 1]);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid selection. Press any key...");
-                    Console.ReadKey();
-                }
-            }
+            int selectedIndex = ConsoleMenu.ShowMenu("Select a Guest to Manage", options);
+
+            if (selectedIndex == -1) break;
+
+            ManageSingleGuest(guests[selectedIndex]);
         }
     }
 
@@ -117,71 +81,45 @@ public class GuestConsoleUI
         bool inProfile = true;
         while (inProfile)
         {
-            Console.Clear();
-            Console.WriteLine("==============================================");
-            Console.WriteLine($"MANAGING: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}");
-            Console.WriteLine("==============================================");
-            Console.WriteLine("-- Current Status --");
-            Console.WriteLine($"RSVP: {selectedGuest.Status}");
-            Console.WriteLine($"Diet: {selectedGuest.Diet}");
-            Console.WriteLine($"Plus-One: {(selectedGuest.PlusOne != null ? selectedGuest.PlusOne.Name : "None")}");
-            Console.WriteLine("\n-- Actions --");
-            Console.WriteLine("1. Update RSVP");
-            Console.WriteLine("2. Manage Plus-One");
-            Console.WriteLine("3. Update Dietary Preference");
-            Console.WriteLine("4. Remove Guest");
-            Console.WriteLine("0. Return to Guest Directory");
-            Console.WriteLine("______________________________________________");
-            Console.Write("\nSelect an action (0-4): ");
+            var title = $"MANAGING: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}\n" +
+                        $"-- Status --\n" +
+                        $"RSVP: {selectedGuest.Status}\n" +
+                        $"Diet: {selectedGuest.Diet}\n" +
+                        $"Plus-One: {(selectedGuest.PlusOne != null ? selectedGuest.PlusOne.Name : "None")}";
 
-            string actionInput = Console.ReadLine() ?? "";
-            
-            switch (actionInput)
+            var options = new List<(string, Action)>
             {
-                case "0":
-                    inProfile = false;
-                    break;
-                case "1":
-                    UpdateRsvp(selectedGuest);
-                    break;
-                case "2":
-                    ManagePlusOne(selectedGuest);
-                    break;
-                case "3":
-                    UpdateDiet(selectedGuest);
-                    break;
-                case "4":
-                    if (RemoveGuest(selectedGuest)) inProfile = false;
-                    break;
-            }
+                ("Update RSVP", () => UpdateRsvp(selectedGuest)),
+                ("Manage Plus-One", () => ManagePlusOne(selectedGuest)),
+                ("Update Dietary Preference", () => UpdateDiet(selectedGuest)),
+                ("Remove Guest", () => 
+                {
+                    if(RemoveGuest(selectedGuest)) inProfile = false; 
+                }),
+                ("Return to Guest Directory", () => inProfile = false)
+            };
+
+            var action = ConsoleMenu.ShowMenu(title, options);
+            action.Invoke();
         }
     }
 
     private void UpdateRsvp(Guest selectedGuest)
     {
-        Console.Clear();
-        Console.WriteLine("==============================================");
-        Console.WriteLine($"UPDATE RSVP: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}");
-        Console.WriteLine("==============================================");
-        Console.WriteLine("Select RSVP Status:");
-        Console.WriteLine("1. Pending");
-        Console.WriteLine("2. Confirmed");
-        Console.WriteLine("3. Declined");
-        Console.WriteLine("0. Cancel and Return");
-        Console.WriteLine("______________________________________________");
-        Console.Write("\nChoice: ");
+        var options = new List<(string, RSVPStatus?)>
+        {
+            ("Pending", RSVPStatus.Pending),
+            ("Confirmed", RSVPStatus.Confirmed),
+            ("Declined", RSVPStatus.Declined),
+            ("Cancel", null)
+        };
 
-        string rsvpInput = Console.ReadLine() ?? "";
-        RSVPStatus? newStatus = null;
-        if (rsvpInput == "1") newStatus = RSVPStatus.Pending;
-        else if (rsvpInput == "2") newStatus = RSVPStatus.Confirmed;
-        else if (rsvpInput == "3") newStatus = RSVPStatus.Declined;
+        var newStatus = ConsoleMenu.ShowMenu($"UPDATE RSVP: {selectedGuest.FirstName}", options);
 
         if (newStatus.HasValue)
         {
             _service.UpdateRsvp(selectedGuest.Id, newStatus.Value);
-            Console.WriteLine($"\n[SUCCESS] {selectedGuest.FirstName}'s RSVP updated to: {newStatus.Value}.");
-            Console.WriteLine("Press any key to return to guest profile...");
+            Console.WriteLine($"\n[SUCCESS] RSVP updated to: {newStatus.Value}.");
             Console.ReadKey();
         }
     }
@@ -190,108 +128,62 @@ public class GuestConsoleUI
     {
         Console.Clear();
         Console.WriteLine("==============================================");
-        Console.WriteLine($"MANAGE PLUS-ONE: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}");
+        Console.WriteLine($"MANAGE PLUS-ONE: {selectedGuest.FirstName.ToUpper()}");
         Console.WriteLine("==============================================");
-        Console.WriteLine($"Currently assigned: {(selectedGuest.PlusOne != null ? selectedGuest.PlusOne.Name : "None")}");
-        Console.WriteLine();
-        Console.Write($"Is {selectedGuest.FirstName} bringing a plus-one? (y/n) (or '0' to cancel): ");
-
-        string plusOneInput = Console.ReadLine() ?? "";
-
-        if (plusOneInput == "0") return;
         
-        if (plusOneInput.ToLower() == "n")
+        if (selectedGuest.PlusOne != null)
         {
-            if (selectedGuest.PlusOne != null)
+            Console.WriteLine($"Currently assigned: {selectedGuest.PlusOne.Name}");
+            Console.Write($"Remove plus-one? (y/n): ");
+            if (Console.ReadLine()?.ToLower() == "y")
             {
                 _service.RemoveCompanion(selectedGuest.Id);
-                Console.WriteLine($"\n[SUCCESS] Plus-one removed.");
+                Console.WriteLine("\n[SUCCESS] Plus-one removed.");
+                Console.ReadKey();
             }
-            else
-            {
-                Console.WriteLine($"\n[info] No plus-one to remove.");
-            }
-            Console.WriteLine("Press any key to return to guest profile...");
-            Console.ReadKey();
+            return;
         }
-        else if (plusOneInput.ToLower() == "y")
+
+        Console.Write("Enter plus-one's name (or '0' to cancel): ");
+        string pName = Console.ReadLine() ?? "";
+
+        if (pName != "0" && !string.IsNullOrWhiteSpace(pName))
         {
-            Console.WriteLine("\n==============================================");
-            Console.WriteLine($"PLUS-ONE DETAILS: {selectedGuest.FirstName.ToUpper()}");
-            Console.WriteLine("==============================================");
-
-            Console.Write("Enter plus-one's name (or '0' to cancel): ");
-            string pName = Console.ReadLine() ?? "";
-
-            if (pName != "0")
+            var options = new List<(string, DietaryRestriction)>
             {
-                Console.WriteLine("\nSelect plus-one's dietary restriction:");
-                Console.WriteLine("1. None");
-                Console.WriteLine("2. Vegetarian");
-                Console.WriteLine("3. Vegan");
-                Console.WriteLine("4. Gluten-Free");
-                Console.WriteLine("5. Nut Allergy");
-                Console.WriteLine("0. Cancel");
-                Console.Write("\nChoice: ");
+                ("None", DietaryRestriction.None),
+                ("Vegetarian", DietaryRestriction.Vegetarian),
+                ("Vegan", DietaryRestriction.Vegan),
+                ("Gluten-Free", DietaryRestriction.GlutenFree),
+                ("Nut Allergy", DietaryRestriction.NutAllergy)
+            };
 
-                string pDietInput = Console.ReadLine() ?? "";
-                DietaryRestriction pDiet = DietaryRestriction.None;
-                bool validDiet = true;
+            var pDiet = ConsoleMenu.ShowMenu($"Select diet for {pName}", options);
 
-                switch (pDietInput)
-                {
-                    case "1": pDiet = DietaryRestriction.None; break;
-                    case "2": pDiet = DietaryRestriction.Vegetarian; break;
-                    case "3": pDiet = DietaryRestriction.Vegan; break;
-                    case "4": pDiet = DietaryRestriction.GlutenFree; break;
-                    case "5": pDiet = DietaryRestriction.NutAllergy; break;
-                    case "0": validDiet = false; break;
-                }
-
-                if (validDiet)
-                {
-                    _service.AddCompanion(selectedGuest.Id, pName, pDiet);
-                    Console.WriteLine($"\n[SUCCESS] {pName} added as a +1 for {selectedGuest.FirstName}.");
-                    Console.WriteLine("Press any key to return to guest profile...");
-                    Console.ReadKey();
-                }
-            }
+            _service.AddCompanion(selectedGuest.Id, pName, pDiet);
+            Console.WriteLine($"\n[SUCCESS] {pName} added.");
+            Console.ReadKey();
         }
     }
 
     private void UpdateDiet(Guest selectedGuest)
     {
-        Console.Clear();
-        Console.WriteLine("==============================================");
-        Console.WriteLine($"UPDATE DIET: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}");
-        Console.WriteLine("==============================================");
-        Console.WriteLine("Select Dietary Restriction:");
-        Console.WriteLine("1. None");
-        Console.WriteLine("2. Vegetarian");
-        Console.WriteLine("3. Vegan");
-        Console.WriteLine("4. Gluten-Free");
-        Console.WriteLine("5. Nut Allergy");
-        Console.WriteLine("0. Cancel and Return");
-        Console.WriteLine("______________________________________________");
-        Console.Write("\nChoice: ");
-
-        string dietInput = Console.ReadLine() ?? "";
-        DietaryRestriction? newDiet = null;
-
-        switch (dietInput)
+        var options = new List<(string, DietaryRestriction?)>
         {
-            case "1": newDiet = DietaryRestriction.None; break;
-            case "2": newDiet = DietaryRestriction.Vegetarian; break;
-            case "3": newDiet = DietaryRestriction.Vegan; break;
-            case "4": newDiet = DietaryRestriction.GlutenFree; break;
-            case "5": newDiet = DietaryRestriction.NutAllergy; break;
-        }
+            ("None", DietaryRestriction.None),
+            ("Vegetarian", DietaryRestriction.Vegetarian),
+            ("Vegan", DietaryRestriction.Vegan),
+            ("Gluten-Free", DietaryRestriction.GlutenFree),
+            ("Nut Allergy", DietaryRestriction.NutAllergy),
+            ("Cancel", null)
+        };
+
+        var newDiet = ConsoleMenu.ShowMenu($"UPDATE DIET: {selectedGuest.FirstName}", options);
 
         if (newDiet.HasValue)
         {
             _service.UpdateDiet(selectedGuest.Id, newDiet.Value);
-            Console.WriteLine($"\n[SUCCESS] {selectedGuest.FirstName}'s diet updated to: {newDiet.Value}.");
-            Console.WriteLine("Press any key to return to guest profile...");
+            Console.WriteLine($"\n[SUCCESS] Diet updated to: {newDiet.Value}.");
             Console.ReadKey();
         }
     }

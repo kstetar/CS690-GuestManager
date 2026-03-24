@@ -1,6 +1,6 @@
 namespace GuestManager;
 
-public class GuestService
+public class GuestService : IGuestService
 {
     private readonly IGuestRepository _repository;
 
