@@ -5,8 +5,13 @@ namespace GuestManager;
 public class GuestRepository : IGuestRepository
 {
     private List<Guest> _guests = new List<Guest>();
-    private readonly string _filePath = "guests.json";
+    private readonly string _filePath;
     private int _nextId = 1;
+
+    public GuestRepository(string filePath = "guests.json")
+    {
+        _filePath = filePath;
+    }
 
     public void Add(Guest guest)
     {
@@ -43,7 +48,7 @@ public class GuestRepository : IGuestRepository
                 string json = File.ReadAllText(_filePath);
                 _guests = JsonSerializer.Deserialize<List<Guest>>(json) ?? new List<Guest>();
                 
-                // Initialize _nextId to be 1 greater than the highest existing ID
+                // Set _nextId to be 1 more than the highest existing ID
                 if (_guests.Count > 0)
                 {
                     _nextId = _guests.Max(g => g.Id) + 1;

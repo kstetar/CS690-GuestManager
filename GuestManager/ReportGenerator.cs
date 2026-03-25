@@ -2,47 +2,30 @@ namespace GuestManager;
 
 public class ReportGenerator : IReportGenerator
 {
-    public int CalculateTotalHeadcount(List<Guest> guests)
+    public EventSummary GenerateSummary(List<Guest> guests)
     {
-        int count = 0;
-        foreach (var guest in guests)
-        {
-            if (guest.Status == RSVPStatus.Confirmed)
-            {
-                count++;
-                if (guest.PlusOne != null)
-                {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    public Dictionary<DietaryRestriction, int> GetDietarySummary(List<Guest> guests)
-    {
-        var summary = new Dictionary<DietaryRestriction, int>();
+        var summary = new EventSummary();
 
         foreach (DietaryRestriction diet in System.Enum.GetValues(typeof(DietaryRestriction)))
         {
-            summary[diet] = 0;
+            summary.DietarySummary[diet] = 0;
         }
 
         foreach (var guest in guests)
         {
-            if (guest.Status == RSVPStatus.Confirmed)
+            if (guest.Status == RSVPStatus.Pending)
             {
-                if (summary.ContainsKey(guest.Diet))
-                {
-                    summary[guest.Diet]++;
-                }
+                summary.PendingCount++;
+            }
+            else if (guest.Status == RSVPStatus.Confirmed)
+            {
+                summary.TotalHeadcount++;
+                summary.DietarySummary[guest.Diet]++;
 
                 if (guest.PlusOne != null)
                 {
-                    if (summary.ContainsKey(guest.PlusOne.Diet))
-                    {
-                        summary[guest.PlusOne.Diet]++;
-                    }
+                    summary.TotalHeadcount++;
+                    summary.DietarySummary[guest.PlusOne.Diet]++;
                 }
             }
         }

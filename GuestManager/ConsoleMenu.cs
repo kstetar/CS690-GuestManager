@@ -1,47 +1,56 @@
+using GuestManager;
+
 namespace GuestManager.UI;
 
-public static class ConsoleMenu
+public class ConsoleMenu
 {
-    public static T ShowMenu<T>(string title, List<(string Text, T Value)> options)
+    private readonly IUserInterface _ui;
+
+    public ConsoleMenu(IUserInterface ui)
+    {
+        _ui = ui;
+    }
+
+    public T ShowMenu<T>(string title, List<(string Text, T Value)> options)
     {
         int selectedIndex = 0;
         ConsoleKey key;
 
         // Hide cursor to prevent flickering
-        Console.CursorVisible = false;
+        _ui.CursorVisible = false;
 
         // 1. Draw Static Header Once
-        Console.Clear();
-        Console.WriteLine("==============================================");
-        Console.WriteLine(title);
-        Console.WriteLine("==============================================");
-        Console.WriteLine("Use Up/Down arrows to navigate, Enter to select.");
-        Console.WriteLine("______________________________________________\n");
+        _ui.Clear();
+        _ui.WriteLine("==============================================");
+        _ui.WriteLine(title);
+        _ui.WriteLine("==============================================");
+        _ui.WriteLine("Use Up/Down arrows to navigate, Enter to select.");
+        _ui.WriteLine("______________________________________________\n");
 
         // 2. Capture the cursor position where options start
-        int optionsStartRow = Console.CursorTop;
+        int optionsStartRow = _ui.CursorTop;
 
         do
         {
             // 3. Reset cursor to the start of the options list
-            Console.SetCursorPosition(0, optionsStartRow);
+            _ui.SetCursorPosition(0, optionsStartRow);
 
             for (int i = 0; i < options.Count; i++)
             {
                 if (i == selectedIndex)
                 {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.WriteLine($"> {options[i].Text}");
-                    Console.ResetColor();
+                    _ui.BackgroundColor = ConsoleColor.Gray;
+                    _ui.ForegroundColor = ConsoleColor.Black;
+                    _ui.WriteLine($"> {options[i].Text}");
+                    _ui.ResetColor();
                 }
                 else
                 {
-                    Console.WriteLine($"  {options[i].Text}");
+                    _ui.WriteLine($"  {options[i].Text}");
                 }
             }
 
-            key = Console.ReadKey(true).Key;
+            key = _ui.ReadKey(true).Key;
 
             switch (key)
             {
@@ -56,7 +65,7 @@ public static class ConsoleMenu
         } while (key != ConsoleKey.Enter);
 
         // Restore cursor visibility
-        Console.CursorVisible = true;
+        _ui.CursorVisible = true;
         return options[selectedIndex].Value;
     }
 }
