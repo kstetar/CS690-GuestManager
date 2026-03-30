@@ -30,14 +30,11 @@ public class GuestConsoleUI
                 ("Exit", () => running = false)
             };
 
-            var action = _menu.ShowMenu("GUESTMANAGER v1.0", options);
+            var action = _menu.ShowMenu("GUESTMANAGER v2.0.0", options);
             action.Invoke();
         }
     }
     
-
-
-
     private void HandleAddGuest()
     {
         _ui.Clear();

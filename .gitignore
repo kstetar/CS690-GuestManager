@@ -6,7 +6,12 @@
 # dotenv files
 .env
 
-passenger-data.txt
+
+diagrams.txt
+reqs.txt
+diagrams_v2.txt
+userjourney.txt
+
 
 # User-specific files
 *.rsuser
@@ -99,9 +104,6 @@ StyleCopReport.xml
 *.tmp
 *.tmp_proj
 
-# Custom ignores
-diagrams.txt
-reqs.txt
 
 *_wpftmp.csproj
 *.log
