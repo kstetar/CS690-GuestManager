@@ -46,22 +46,28 @@ public class GuestService : IGuestService
         }
     }
 
-    public void UpdateDiet(int guestId, DietaryRestriction diet)
+    public void UpdateDiet(int guestId, DietaryRestriction diet, string? customDietNote = null)
     {
         var guest = GetGuestById(guestId);
         if (guest != null)
         {
             guest.Diet = diet;
+            guest.CustomDietNote = diet == DietaryRestriction.Other ? customDietNote?.Trim() : null;
             _repository.Update(guest);
         }
     }
 
-    public void AddCompanion(int guestId, string name, DietaryRestriction diet)
+    public void AddCompanion(int guestId, string name, DietaryRestriction diet, string? customDietNote = null)
     {
         var guest = GetGuestById(guestId);
         if (guest != null)
         {
-            var companion = new Companion { Name = name, Diet = diet };
+            var companion = new Companion 
+            { 
+                Name = name, 
+                Diet = diet,
+                CustomDietNote = diet == DietaryRestriction.Other ? customDietNote?.Trim() : null
+            };
             guest.AddCompanion(companion);
             _repository.Update(guest);
         }

@@ -91,7 +91,7 @@ public class GuestConsoleUI
             var title = $"MANAGING: {selectedGuest.FirstName.ToUpper()} {selectedGuest.LastName.ToUpper()}\n" +
                         $"-- Status --\n" +
                         $"RSVP: {selectedGuest.Status}\n" +
-                        $"Diet: {selectedGuest.Diet}\n" +
+                        $"Diet: {FormatDietDisplay(selectedGuest.Diet, selectedGuest.CustomDietNote)}\n" +
                         $"Plus-One: {(selectedGuest.PlusOne != null ? selectedGuest.PlusOne.Name : "None")}";
 
             var options = new List<(string, Action)>
@@ -162,12 +162,14 @@ public class GuestConsoleUI
                 ("Vegetarian", DietaryRestriction.Vegetarian),
                 ("Vegan", DietaryRestriction.Vegan),
                 ("Gluten-Free", DietaryRestriction.GlutenFree),
-                ("Nut Allergy", DietaryRestriction.NutAllergy)
+                ("Nut Allergy", DietaryRestriction.NutAllergy),
+                ("Other", DietaryRestriction.Other)
             };
 
             var pDiet = _menu.ShowMenu($"Select diet for {pName}", options);
+            var customDietNote = PromptForCustomDietNoteIfNeeded(pDiet, pName);
 
-            _service.AddCompanion(selectedGuest.Id, pName, pDiet);
+            _service.AddCompanion(selectedGuest.Id, pName, pDiet, customDietNote);
             _ui.WriteLine($"\n[SUCCESS] {pName} added.");
             _ui.ReadKey();
         }
@@ -182,6 +184,7 @@ public class GuestConsoleUI
             ("Vegan", DietaryRestriction.Vegan),
             ("Gluten-Free", DietaryRestriction.GlutenFree),
             ("Nut Allergy", DietaryRestriction.NutAllergy),
+            ("Other", DietaryRestriction.Other),
             ("Cancel", null)
         };
 
@@ -189,10 +192,32 @@ public class GuestConsoleUI
 
         if (newDiet.HasValue)
         {
-            _service.UpdateDiet(selectedGuest.Id, newDiet.Value);
-            _ui.WriteLine($"\n[SUCCESS] Diet updated to: {newDiet.Value}.");
+            var customDietNote = PromptForCustomDietNoteIfNeeded(newDiet.Value, selectedGuest.FirstName);
+            _service.UpdateDiet(selectedGuest.Id, newDiet.Value, customDietNote);
+            _ui.WriteLine($"\n[SUCCESS] Diet updated to: {FormatDietDisplay(newDiet.Value, customDietNote)}.");
             _ui.ReadKey();
         }
+    }
+
+    private string? PromptForCustomDietNoteIfNeeded(DietaryRestriction diet, string personName)
+    {
+        if (diet != DietaryRestriction.Other)
+        {
+            return null;
+        }
+
+        _ui.Write($"Enter custom dietary note for {personName}: ");
+        return _ui.ReadLine()?.Trim();
+    }
+
+    private static string FormatDietDisplay(DietaryRestriction diet, string? customDietNote)
+    {
+        if (diet == DietaryRestriction.Other)
+        {
+            return string.IsNullOrWhiteSpace(customDietNote) ? "Other" : $"Other: {customDietNote}";
+        }
+
+        return diet.ToString();
     }
 
     private bool RemoveGuest(Guest selectedGuest)
@@ -233,20 +258,20 @@ public class GuestConsoleUI
             _ui.WriteLine(string.Format("{0,-20} | {1,-10} | {2}", 
                 $"{guest.FirstName} {guest.LastName}", 
                 guest.Status,
-                guest.Diet));
+                FormatDietDisplay(guest.Diet, guest.CustomDietNote)));
 
             if (guest.PlusOne != null)
             {
                 _ui.WriteLine(string.Format("  + {0,-16} | {1,-10} | {2}", 
                     guest.PlusOne.Name, 
-                    "Confirmed", 
-                    guest.PlusOne.Diet));
+                    guest.Status,
+                    FormatDietDisplay(guest.PlusOne.Diet, guest.PlusOne.CustomDietNote)));
             }
         }
         _ui.WriteLine("==============================================");
         _ui.WriteLine("                  TOTALS");
         _ui.WriteLine("==============================================");
-        _ui.WriteLine($"Total Headcount (Confirmed +1s): {summary.TotalHeadcount}");
+        _ui.WriteLine($"Total Confirmed (incl. Companion): {summary.TotalHeadcount}");
         _ui.WriteLine($"Pending Replies: {summary.PendingCount}");
         
         _ui.WriteLine("\n-- DIETARY BREAKDOWN --");

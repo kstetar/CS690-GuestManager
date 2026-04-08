@@ -7,6 +7,7 @@ public class Guest
     public string LastName { get; set; } = string.Empty;
     public RSVPStatus Status { get; set; } = RSVPStatus.Pending;
     public DietaryRestriction Diet { get; set; } = DietaryRestriction.None;
+    public string? CustomDietNote { get; set; }
     public Companion? PlusOne { get; set; }
 
     public void UpdateRSVP(RSVPStatus status) => Status = status;

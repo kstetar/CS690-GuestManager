@@ -163,4 +163,49 @@ public class GuestServiceTests
         _service.RemoveGuest(99);
         _mockRepo.Verify(r => r.Remove(It.IsAny<Guest>()), Times.Never);
     }
+
+    [Fact]
+    public void UpdateDiet_ShouldSetCustomDietNote_WhenDietIsOther()
+    {
+        var guest = new Guest { Id = 1, Diet = DietaryRestriction.None };
+        _mockRepo.Setup(r => r.GetAll()).Returns(new List<Guest> { guest });
+
+        _service.UpdateDiet(1, DietaryRestriction.Other, "No mushrooms");
+
+        Assert.Equal(DietaryRestriction.Other, guest.Diet);
+        Assert.Equal("No mushrooms", guest.CustomDietNote);
+        _mockRepo.Verify(r => r.Update(guest), Times.Once);
+    }
+
+    [Fact]
+    public void UpdateDiet_ShouldClearCustomDietNote_WhenDietIsNotOther()
+    {
+        var guest = new Guest
+        {
+            Id = 1,
+            Diet = DietaryRestriction.Other,
+            CustomDietNote = "No dairy"
+        };
+        _mockRepo.Setup(r => r.GetAll()).Returns(new List<Guest> { guest });
+
+        _service.UpdateDiet(1, DietaryRestriction.Vegan, "ignored");
+
+        Assert.Equal(DietaryRestriction.Vegan, guest.Diet);
+        Assert.Null(guest.CustomDietNote);
+        _mockRepo.Verify(r => r.Update(guest), Times.Once);
+    }
+
+    [Fact]
+    public void AddCompanion_ShouldSetCustomDietNote_WhenDietIsOther()
+    {
+        var guest = new Guest { Id = 1, FirstName = "Jane" };
+        _mockRepo.Setup(r => r.GetAll()).Returns(new List<Guest> { guest });
+
+        _service.AddCompanion(1, "Partner", DietaryRestriction.Other, "Allergic to sesame");
+
+        Assert.NotNull(guest.PlusOne);
+        Assert.Equal(DietaryRestriction.Other, guest.PlusOne.Diet);
+        Assert.Equal("Allergic to sesame", guest.PlusOne.CustomDietNote);
+        _mockRepo.Verify(r => r.Update(guest), Times.Once);
+    }
 }

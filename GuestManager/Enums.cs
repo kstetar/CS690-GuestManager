@@ -13,5 +13,6 @@ public enum DietaryRestriction
     Vegetarian,
     Vegan,
     GlutenFree,
-    NutAllergy
+    NutAllergy,
+    Other
 }
