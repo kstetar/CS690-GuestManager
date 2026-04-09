@@ -167,7 +167,7 @@ public class GuestConsoleUI
             };
 
             var pDiet = _menu.ShowMenu($"Select diet for {pName}", options);
-            var customDietNote = PromptForCustomDietNoteIfNeeded(pDiet, pName);
+            var customDietNote = PromptDietNote(pDiet, pName);
 
             _service.AddCompanion(selectedGuest.Id, pName, pDiet, customDietNote);
             _ui.WriteLine($"\n[SUCCESS] {pName} added.");
@@ -192,14 +192,14 @@ public class GuestConsoleUI
 
         if (newDiet.HasValue)
         {
-            var customDietNote = PromptForCustomDietNoteIfNeeded(newDiet.Value, selectedGuest.FirstName);
+            var customDietNote = PromptDietNote(newDiet.Value, selectedGuest.FirstName);
             _service.UpdateDiet(selectedGuest.Id, newDiet.Value, customDietNote);
             _ui.WriteLine($"\n[SUCCESS] Diet updated to: {FormatDietDisplay(newDiet.Value, customDietNote)}.");
             _ui.ReadKey();
         }
     }
 
-    private string? PromptForCustomDietNoteIfNeeded(DietaryRestriction diet, string personName)
+    private string? PromptDietNote(DietaryRestriction diet, string personName)
     {
         if (diet != DietaryRestriction.Other)
         {

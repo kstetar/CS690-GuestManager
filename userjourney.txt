@@ -1,0 +1,234 @@
+## Run the application
+* Follow the steps in the [deployment guide](https://github.com/kstetar/CS690-GuestManager/wiki/Deployment-Guide) to run locally.
+
+
+
+---
+
+## Adding a New Guest
+
+1. From the main menu, select **Add New Guest**
+2. Enter the guest's **First Name** and press Enter
+   - To cancel and return to main menu, type `0` and press Enter
+3. Enter the guest's **Last Name** and press Enter
+4. You will see a [SUCCESS] message confirming the guest was created
+5. Press any key to return to the main menu
+
+**Example:**
+```
+Enter First Name (or '0' to cancel): Jane
+Enter Last Name: Smith
+[SUCCESS] Jane Smith added.
+Press any key to return to menu...
+```
+
+---
+
+## Removing a Guest
+
+1. From the main menu, select **Manage Guest**
+2. Use arrow keys to navigate to the guest you want to remove and press Enter
+3. Select **Remove Guest** from the guest profile menu
+4. You will be prompted: "Are you sure you want to remove this guest? (y/n)"
+5. Press **y** to confirm removal or **n** to cancel
+6. If confirmed, you will see a [SUCCESS] message
+7. Press any key to return to the guest directory
+
+**Example:**
+```
+Are you sure you want to remove this guest? (y/n): y
+[SUCCESS] Jane Smith removed.
+Press any key to return to directory...
+```
+
+---
+
+## Setting Guest RSVP Status
+
+1. From the main menu, select **Manage Guest**
+2. Use arrow keys to navigate to the guest and press Enter
+3. Select **Update RSVP** from the guest profile menu
+4. Use arrow keys to select the new status and press Enter:
+   - **Pending** - Guest has not responded yet
+   - **Confirmed** - Guest is attending
+   - **Declined** - Guest is not attending
+   - **Cancel** - Return to guest profile without changes
+5. You will see a [SUCCESS] message confirming the update
+6. Press any key to return to the guest profile
+
+**Example:**
+```
+UPDATE RSVP: JANE SMITH
+Use Up/Down arrows to navigate, Enter to select.
+______________________________________________
+
+> Pending
+  Confirmed
+  Declined
+  Cancel
+
+[SUCCESS] RSVP updated to: Confirmed.
+Press any key to return to guest profile...
+```
+
+---
+
+## Setting Guest Dietary Needs
+
+1. From the main menu, select **Manage Guest**
+2. Use arrow keys to navigate to the guest and press Enter
+3. Select **Update Dietary Preference** from the guest profile menu
+4. Use arrow keys to select the dietary restriction and press Enter:
+   - **None**
+   - **Vegetarian**
+   - **Vegan**
+   - **Gluten-Free**
+   - **Nut Allergy**
+  - **Other**
+   - **Cancel** - Return to guest profile without changes
+5. If **Other** is selected, type a custom dietary note and press Enter
+6. You will see a [SUCCESS] message confirming the update
+7. Press any key to return to the guest profile
+
+**Example:**
+```
+UPDATE DIET: JANE SMITH
+Use Up/Down arrows to navigate, Enter to select.
+______________________________________________
+
+  None
+  Vegetarian
+> Vegan
+  Gluten-Free
+  Nut Allergy
+  Other
+  Cancel
+
+[SUCCESS] Diet updated to: Vegan.
+Press any key to return to guest profile...
+```
+
+---
+
+## Adding a Companion (Plus-One) for a Guest
+
+1. From the main menu, select **Manage Guest**
+2. Use arrow keys to navigate to the guest and press Enter
+3. Select **Manage Plus-One** from the guest profile menu
+4. If no companion exists:
+   - Enter the companion's name (or type `0` to cancel and return to guest profile)
+5. You will be prompted to select the companion's dietary restrictions:
+   - Use arrow keys to navigate through options and press Enter:
+     - None
+     - Vegetarian
+     - Vegan
+     - Gluten-Free
+     - Nut Allergy
+    - Other
+6. If **Other** is selected, type a custom dietary note and press Enter
+7. You will see a [SUCCESS] message confirming the companion was added
+8. Press any key to return to the guest profile
+
+**Example - Adding a Companion:**
+```
+MANAGE PLUS-ONE: JANE SMITH
+Enter plus-one's name (or '0' to cancel): Mark Johnson
+Select diet for Mark Johnson:
+Use Up/Down arrows to navigate, Enter to select.
+______________________________________________
+
+> None
+  Vegetarian
+  Vegan
+  Gluten-Free
+  Nut Allergy
+  Other
+
+[SUCCESS] Mark Johnson added.
+Press any key to return to guest profile...
+```
+
+---
+
+## Managing a Companion's Dietary Needs
+
+1. From the main menu, select **Manage Guest**
+2. Use arrow keys to navigate to the guest with the companion and press Enter
+3. Select **Manage Plus-One** from the guest profile menu
+4. If a companion already exists:
+   - You will see: "Currently assigned: [Companion Name]"
+   - You will be prompted: "Remove plus-one? (y/n)"
+5. Press **y** to remove the current companion (returns to step 4 above to add new one)
+   - Or press **n** to keep the current companion
+6. If removing, you will see a [SUCCESS] message
+7. Press any key to return to the guest profile
+
+**To update a companion's dietary restrictions:**
+- Remove the existing companion and add them again with the correct dietary information
+- Currently, companion dietary information can only be set during the initial addition
+
+---
+
+## Accessing and Understanding the Event Summary
+
+1. From the main menu, select **View Event Summary**
+2. You will see a formatted report with three sections:
+
+**Section 1: Guest List**
+- Displays all guests with their:
+  - Name (First + Last)
+  - RSVP status (Pending, Confirmed, or Declined)
+  - Dietary restrictions
+- Companions appear indented under their guest with a " + " prefix
+
+**Section 2: Total Headcount**
+- **Total Confirmed (incl. Companion):** Number of confirmed guests + companions linked to confirmed guests
+  - Only counts guests with "Confirmed" status and their companions
+  - Does not include "Pending" or "Declined" guests
+- **Pending Replies:** Number of guests with "Pending" status
+
+**Section 3: Dietary Breakdown**
+- Shows counts for each dietary restriction among confirmed guests
+- Only includes confirmed guests and their companions
+- Does not include pending or declined guests
+- Entries with **Other** are grouped under **Other** in totals
+- Custom notes for **Other** appear in the row-level DIET column as `Other: <typed note>`
+
+3. Press any key to return to the main menu
+
+**Example Report:**
+```
+            EVENT SUMMARY REPORT
+==============================================
+NAME                  | RSVP       | DIET
+----------------------------------------
+Jane Smith            | Pending    | None
+Jeff Jones            | Confirmed  | Vegan
+  + Mark Johnson      | Confirmed  | Vegetarian
+John Doe              | Confirmed  | Gluten-Free
+==============================================
+                  TOTALS
+==============================================
+Total Confirmed (incl. Companion): 3
+Pending Replies: 1
+
+-- DIETARY BREAKDOWN --
+Vegan: 1
+Vegetarian: 1
+Gluten-Free: 1
+```
+
+---
+
+## Quick Reference: Common User Journeys
+
+| Task | Menu Path |
+|------|-----------|
+| Add a new guest | Main Menu → Add New Guest |
+| Remove a guest | Main Menu → Manage Guest → [Guest] → Remove Guest |
+| Update RSVP | Main Menu → Manage Guest → [Guest] → Update RSVP |
+| Update dietary needs | Main Menu → Manage Guest → [Guest] → Update Dietary Preference |
+| Add companion | Main Menu → Manage Guest → [Guest] → Manage Plus-One |
+| View summary | Main Menu → View Event Summary |
+
+---
