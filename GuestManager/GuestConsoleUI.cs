@@ -30,7 +30,7 @@ public class GuestConsoleUI
                 ("Exit", () => running = false)
             };
 
-            var action = _menu.ShowMenu("GUESTMANAGER v2.0.0", options);
+            var action = _menu.ShowMenu("GUESTMANAGER v3.0.0", options);
             action.Invoke();
         }
     }
